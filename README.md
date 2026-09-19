@@ -13,6 +13,8 @@
 
 <img src="docs/demo.png" alt="mcp-rollcall output: servers by scope, a probe with start time, tool count and token cost, and the stderr of the one that failed" width="900">
 
+<sub>Part of the rollcall family — tools that make what Claude Code does silently legible: [skill-rollcall](https://github.com/Londopy/skill-rollcall) · **mcp-rollcall** · [settings-effective](https://github.com/Londopy/settings-effective) · [git-attribution](https://github.com/Londopy/git-attribution)</sub>
+
 </div>
 
 ---
