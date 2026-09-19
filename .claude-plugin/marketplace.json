@@ -1,0 +1,17 @@
+{
+  "name": "mcp-rollcall",
+  "owner": {
+    "name": "Londopy",
+    "url": "https://github.com/Londopy"
+  },
+  "description": "Marketplace for the mcp-rollcall plugin.",
+  "plugins": [
+    {
+      "name": "mcp-rollcall",
+      "source": "./",
+      "description": "Diagnose configured MCP servers: why one fails to connect, and what each costs.",
+      "version": "1.0.0",
+      "keywords": ["claude-code", "mcp", "diagnostics"]
+    }
+  ]
+}
