@@ -39,7 +39,7 @@ def free_port() -> int:
 def main() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         t = Path(tmp)
-        home, proj, cj, managed = t / "home", t / "Code" / "nexium", t / "claude.json", t / "managed"
+        home, proj, cj, managed = t / "home", t / "Code" / "tidewatch", t / "claude.json", t / "managed"
         claude_home = home / ".claude"
         claude_home.mkdir(parents=True); proj.mkdir(parents=True); managed.mkdir()
         py = sys.executable
@@ -48,25 +48,25 @@ def main() -> None:
         # the same context7 for Codex, plus a Codex-only docs server missing its token
         (home / ".codex").mkdir()
         (home / ".codex" / "config.toml").write_text(
-            f'[mcp_servers.context7]\ncommand = "{pyq}"\nargs = ["{fakeq}", "ok", "2"]\n\n'
+            f'[mcp_servers.docs-search]\ncommand = "{pyq}"\nargs = ["{fakeq}", "ok", "2"]\n\n'
             '[mcp_servers.openai-docs]\nurl = "https://developers.openai.com/mcp"\nbearer_token_env_var = "OPENAI_DOCS_TOKEN"\n')
         # Cursor: a remote github server with an ${env:} header
         (home / ".cursor").mkdir()
         (home / ".cursor" / "mcp.json").write_text(json.dumps({"mcpServers": {
             "github": {"url": "https://api.githubcopilot.com/mcp", "headers": {"Authorization": "Bearer ${env:GITHUB_MCP_TOKEN}"}}}}))
         servers = {
-            "context7":   {"command": py, "args": [FAKE, "ok", "2"]},
-            "solidworks": {"command": py, "args": [FAKE, "ok", "132"]},
-            "wireshark":  {"command": py, "args": [FAKE, "crash"], "env": {"WIRESHARK_MCP_ALLOWED_DIRS": "C:\\Users\\londo\\Downloads;C:\\Users\\londo\\captures"}},
-            "anki":       {"command": py, "args": [FAKE, "ok", "0", f"http://127.0.0.1:{free_port()}"]},
-            "kicad":      {"command": "C:\\Program Files\\nodejs\\node.exe", "args": ["C:\\Users\\londo\\mcp-servers\\kicad-mcp\\dist\\index.js"]},
-            "obs":        {"command": "npx", "args": ["-y", "obs-mcp"], "env": {"OBS_WEBSOCKET_PASSWORD": "<your-password>"}},
+            "docs-search": {"command": py, "args": [FAKE, "ok", "2"]},
+            "spreadsheet": {"command": py, "args": [FAKE, "ok", "132"]},
+            "tide-db":     {"command": py, "args": [FAKE, "crash"], "env": {"TIDE_DB_ALLOWED_DIRS": "~/tidewatch/data;~/tidewatch/exports"}},
+            "home-hub":    {"command": py, "args": [FAKE, "ok", "0", f"http://127.0.0.1:{free_port()}"]},
+            "gauge-sim":   {"command": "C:\\Program Files\\nodejs\\node.exe", "args": ["C:\\Users\\mara\\mcp-servers\\gauge-sim\\dist\\index.js"]},
+            "weather":     {"command": "npx", "args": ["-y", "weather-mcp"], "env": {"WEATHER_API_KEY": "<your-key>"}},
         }
         (claude_home / "mcp-needs-auth-cache.json").write_text(json.dumps({f"plugin:x:{n}": {"timestamp": 1} for n in ("slack", "notion", "linear")}))
         cj.write_text(json.dumps({"mcpServers": servers, "projects": {}}))
         (proj / ".mcp.json").write_text(json.dumps({"mcpServers": {"repo-docs": {"command": py, "args": [FAKE, "ok", "4"]}}}))
-        pretty = {"context7": "npx.cmd -y @upstash/context7-mcp", "solidworks": "solidworks-mcp.exe",
-                  "wireshark": "uvx.exe wireshark-mcp", "anki": "npx.cmd -y mcp-remote http://127.0.0.1:3141",
+        pretty = {"docs-search": "npx.cmd -y docs-search-mcp", "spreadsheet": "spreadsheet-mcp.exe",
+                  "tide-db": "uvx.exe tide-db-mcp", "home-hub": "npx.cmd -y mcp-remote http://127.0.0.1:3141",
                   "repo-docs": "npx.cmd -y repo-docs-mcp"}
         real_cmdline = mcprollcall.cmdline
         mcprollcall.cmdline = lambda s: pretty.get(s.name) or real_cmdline(s)
@@ -75,16 +75,16 @@ def main() -> None:
             mcprollcall.main(["--project", str(proj), "--home", str(home), "--claude-home", str(claude_home),
                               "--claude-json", str(cj), "--managed-dir", str(managed), "--no-plugins",
                               "--agent", "claude,codex,cursor", "--no-net",
-                              "--probe", "context7,solidworks,wireshark", "--timeout", "15"])
+                              "--probe", "docs-search,spreadsheet,tide-db", "--timeout", "15"])
         mcprollcall.cmdline = real_cmdline
-        out = (buf.getvalue().replace(str(cj), "~/.claude.json").replace(str(proj), "~/Code/nexium")
+        out = (buf.getvalue().replace(str(cj), "~/.claude.json").replace(str(proj), "~/Code/tidewatch")
                .replace(str(home), "~").replace(str(t), "~").replace("\\", "/"))
         out = out.replace("(--agent)", "(CLAUDECODE set; --agent widened it)")
         out = re.sub(r"127\.0\.0\.1:\d+", "127.0.0.1:3141", out)
-        out = out.replace("fake 0.1", "Context7 4.1.1", 1).replace("fake 0.1", "SolidWorks MCP Server 4.0.3", 1).replace("fake 0.1", "Context7 4.1.1", 1)
+        out = out.replace("fake 0.1", "docs-search 2.3.0", 1).replace("fake 0.1", "spreadsheet-mcp 1.8.2", 1).replace("fake 0.1", "docs-search 2.3.0", 1)
         out = out.replace("ValueError: Allowed directories must already exist", "ValueError: Allowed directories must already exist and be directories")
 
-    lines = ["$ python mcprollcall.py --agent claude,codex,cursor --probe context7,solidworks,wireshark", ""] + out.rstrip().splitlines()
+    lines = ["$ python mcprollcall.py --agent claude,codex,cursor --probe docs-search,spreadsheet,tide-db", ""] + out.rstrip().splitlines()
     lines = [l if len(l) <= 122 else l[:121] + "…" for l in lines]
     font = ImageFont.truetype(str(FONT), 15)
     lh, pad, width = 22, 28, 1160

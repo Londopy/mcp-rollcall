@@ -11,7 +11,7 @@ tool list the host hides.
     python mcprollcall.py                     static roll call: sources, commands, paths, env, ports
     python mcprollcall.py --agent codex       another host's config files (or `all`)
     python mcprollcall.py --probe             spawn every stdio server; handshake, tools, cost, stderr
-    python mcprollcall.py --probe anki,obs    only these
+    python mcprollcall.py --probe a,b        only these
     python mcprollcall.py --project DIR       the project whose .mcp.json and local servers count
     python mcprollcall.py --timeout 30        seconds to wait for a handshake (default 20)
     python mcprollcall.py --no-net            skip the TCP reachability checks

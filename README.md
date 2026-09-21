@@ -20,9 +20,9 @@
 
 ---
 
-Claude Code says `anki (CONNECTION_CLOSED)` and moves on. Codex says the server "failed to initialize". Cursor shows a red dot. Was it the command? A path? An env var? The app it bridges to isn't running? The server threw on startup? The host saw the answer — it read the stderr, it got the exit code — and discarded it. And each host keeps its servers in a different file, so "what do I have configured" is already five files deep.
+Claude Code says `home-hub (CONNECTION_CLOSED)` and moves on. Codex says the server "failed to initialize". Cursor shows a red dot. Was it the command? A path? An env var? The app it bridges to isn't running? The server threw on startup? The host saw the answer — it read the stderr, it got the exit code — and discarded it. And each host keeps its servers in a different file, so "what do I have configured" is already five files deep.
 
-`mcp-rollcall` reads every place a server can be configured for the host you're in (or all of them), checks each one the way the host would try to start it, and on request actually starts it, does the MCP handshake, and shows you what came back: the tool list, the startup time, the context cost, or the traceback. It runs as a skill (`/mcp-rollcall` in Claude Code, `$mcp-rollcall` in Codex, or just say "why did anki fail to connect") and as a plain CLI.
+`mcp-rollcall` reads every place a server can be configured for the host you're in (or all of them), checks each one the way the host would try to start it, and on request actually starts it, does the MCP handshake, and shows you what came back: the tool list, the startup time, the context cost, or the traceback. It runs as a skill (`/mcp-rollcall` in Claude Code, `$mcp-rollcall` in Codex, or just say "why did home-hub fail to connect") and as a plain CLI.
 
 ## What it does
 
@@ -70,7 +70,7 @@ cp -r mcp-rollcall/skills/mcp-rollcall ~/.config/opencode/skills/ # OpenCode
 
 ### From your agent
 
-Say what you'd naturally say — "why did wireshark fail to connect?", "what MCP servers do I have?", "which servers are eating my context?", "is this .mcp.json OK?", "does Cursor have the same servers as Claude?" — or invoke the skill by name. The agent runs the static pass for the host you're in, probes the server you asked about if it's still unexplained, quotes the stderr line that matters, and tells you the fix. It won't edit config for you (Claude Code's running app rewrites `~/.claude.json`); it gives you the `claude mcp add` line, or the `config.toml` / `mcp.json` entry to change.
+Say what you'd naturally say — "why did tide-db fail to connect?", "what MCP servers do I have?", "which servers are eating my context?", "is this .mcp.json OK?", "does Cursor have the same servers as Claude?" — or invoke the skill by name. The agent runs the static pass for the host you're in, probes the server you asked about if it's still unexplained, quotes the stderr line that matters, and tells you the fix. It won't edit config for you (Claude Code's running app rewrites `~/.claude.json`); it gives you the `claude mcp add` line, or the `config.toml` / `mcp.json` entry to change.
 
 ### As a CLI
 
@@ -80,7 +80,7 @@ Stdlib-only Python, nothing in it depends on any particular agent:
 python ~/.claude/skills/mcp-rollcall/scripts/mcprollcall.py                       # host detected from the environment
 python ~/.agents/skills/mcp-rollcall/scripts/mcprollcall.py --agent codex          # Codex's config.toml
 python ~/.claude/skills/mcp-rollcall/scripts/mcprollcall.py --agent all --probe    # everything on this machine, probed
-python ~/.claude/skills/mcp-rollcall/scripts/mcprollcall.py --probe wireshark --full
+python ~/.claude/skills/mcp-rollcall/scripts/mcprollcall.py --probe tide-db --full
 ```
 
 | Flag | Effect |
@@ -118,8 +118,8 @@ Same name in two hosts' files = two servers (they start independently). Same nam
 |---|---|---|---|
 | `command-missing` | error | `uvx` not installed | install uv, or use the full path |
 | `arg-path-missing` / `cwd-missing` | error | `dist/index.js` moved; Codex `cwd = "./tools"` gone | — |
-| `var-unset` | error | `${OBSIDIAN_VAULT}`, `${env:TOKEN}`, `bearer_token_env_var = "X"`, Gemini `$VAR` — no value, no default | `export` it, or `${VAR:-default}` |
-| `port-closed` | error | `mcp-remote http://127.0.0.1:3141` and Anki isn't open | start the app that hosts it |
+| `var-unset` | error | `${TIDE_DB_URL}`, `${env:TOKEN}`, `bearer_token_env_var = "X"`, Gemini `$VAR` — no value, no default | `export` it, or `${VAR:-default}` |
+| `port-closed` | error | `mcp-remote http://127.0.0.1:3141` and the desktop app it bridges to isn't open | start the app that hosts it |
 | `probe-failed` | error | `ValueError: Allowed directories must already exist` | the stderr tail |
 | `denied` / `not-allowed` / `excluded` | error | Claude `deniedMcpServers`, Gemini `mcp.excluded` | — |
 | `envfile-missing` (Cursor) / `input-undefined` (VS Code) | error | `"envFile": ".env"` absent; `${input:key}` with no `inputs` entry | — |
