@@ -9,9 +9,16 @@
     {
       "name": "mcp-rollcall",
       "source": "./",
-      "description": "Diagnose configured MCP servers: why one fails to connect, and what each costs.",
-      "version": "1.0.0",
-      "keywords": ["claude-code", "mcp", "diagnostics"]
+      "description": "Which MCP servers will fail to connect, exactly why, and what each costs - across Claude Code, Codex, Cursor, Gemini CLI, Copilot, VS Code, Windsurf and OpenCode.",
+      "version": "1.1.0",
+      "keywords": [
+        "claude-code",
+        "codex",
+        "cursor",
+        "agent-skills",
+        "mcp",
+        "diagnostics"
+      ]
     }
   ]
 }

@@ -40,8 +40,20 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         t = Path(tmp)
         home, proj, cj, managed = t / "home", t / "Code" / "nexium", t / "claude.json", t / "managed"
-        home.mkdir(); proj.mkdir(parents=True); managed.mkdir()
+        claude_home = home / ".claude"
+        claude_home.mkdir(parents=True); proj.mkdir(parents=True); managed.mkdir()
         py = sys.executable
+        pyq = py.replace("\\", "/")
+        fakeq = FAKE.replace("\\", "/")
+        # the same context7 for Codex, plus a Codex-only docs server missing its token
+        (home / ".codex").mkdir()
+        (home / ".codex" / "config.toml").write_text(
+            f'[mcp_servers.context7]\ncommand = "{pyq}"\nargs = ["{fakeq}", "ok", "2"]\n\n'
+            '[mcp_servers.openai-docs]\nurl = "https://developers.openai.com/mcp"\nbearer_token_env_var = "OPENAI_DOCS_TOKEN"\n')
+        # Cursor: a remote github server with an ${env:} header
+        (home / ".cursor").mkdir()
+        (home / ".cursor" / "mcp.json").write_text(json.dumps({"mcpServers": {
+            "github": {"url": "https://api.githubcopilot.com/mcp", "headers": {"Authorization": "Bearer ${env:GITHUB_MCP_TOKEN}"}}}}))
         servers = {
             "context7":   {"command": py, "args": [FAKE, "ok", "2"]},
             "solidworks": {"command": py, "args": [FAKE, "ok", "132"]},
@@ -50,7 +62,7 @@ def main() -> None:
             "kicad":      {"command": "C:\\Program Files\\nodejs\\node.exe", "args": ["C:\\Users\\londo\\mcp-servers\\kicad-mcp\\dist\\index.js"]},
             "obs":        {"command": "npx", "args": ["-y", "obs-mcp"], "env": {"OBS_WEBSOCKET_PASSWORD": "<your-password>"}},
         }
-        (home / "mcp-needs-auth-cache.json").write_text(json.dumps({f"plugin:x:{n}": {"timestamp": 1} for n in ("slack", "notion", "linear")}))
+        (claude_home / "mcp-needs-auth-cache.json").write_text(json.dumps({f"plugin:x:{n}": {"timestamp": 1} for n in ("slack", "notion", "linear")}))
         cj.write_text(json.dumps({"mcpServers": servers, "projects": {}}))
         (proj / ".mcp.json").write_text(json.dumps({"mcpServers": {"repo-docs": {"command": py, "args": [FAKE, "ok", "4"]}}}))
         pretty = {"context7": "npx.cmd -y @upstash/context7-mcp", "solidworks": "solidworks-mcp.exe",
@@ -60,17 +72,19 @@ def main() -> None:
         mcprollcall.cmdline = lambda s: pretty.get(s.name) or real_cmdline(s)
         buf = io.StringIO()
         with redirect_stdout(buf):
-            mcprollcall.main(["--project", str(proj), "--claude-home", str(home), "--claude-json", str(cj),
-                              "--managed-dir", str(managed), "--no-plugins", "--probe", "context7,solidworks,wireshark",
-                              "--timeout", "15"])
+            mcprollcall.main(["--project", str(proj), "--home", str(home), "--claude-home", str(claude_home),
+                              "--claude-json", str(cj), "--managed-dir", str(managed), "--no-plugins",
+                              "--agent", "claude,codex,cursor", "--no-net",
+                              "--probe", "context7,solidworks,wireshark", "--timeout", "15"])
         mcprollcall.cmdline = real_cmdline
         out = (buf.getvalue().replace(str(cj), "~/.claude.json").replace(str(proj), "~/Code/nexium")
-               .replace(str(t), "~").replace("\\", "/"))
+               .replace(str(home), "~").replace(str(t), "~").replace("\\", "/"))
+        out = out.replace("(--agent)", "(CLAUDECODE set; --agent widened it)")
         out = re.sub(r"127\.0\.0\.1:\d+", "127.0.0.1:3141", out)
-        out = out.replace("fake 0.1", "Context7 4.1.1", 1).replace("fake 0.1", "SolidWorks MCP Server 4.0.3", 1)
+        out = out.replace("fake 0.1", "Context7 4.1.1", 1).replace("fake 0.1", "SolidWorks MCP Server 4.0.3", 1).replace("fake 0.1", "Context7 4.1.1", 1)
         out = out.replace("ValueError: Allowed directories must already exist", "ValueError: Allowed directories must already exist and be directories")
 
-    lines = ["$ python mcprollcall.py --probe context7,solidworks,wireshark", ""] + out.rstrip().splitlines()
+    lines = ["$ python mcprollcall.py --agent claude,codex,cursor --probe context7,solidworks,wireshark", ""] + out.rstrip().splitlines()
     lines = [l if len(l) <= 122 else l[:121] + "…" for l in lines]
     font = ImageFont.truetype(str(FONT), 15)
     lh, pad, width = 22, 28, 1160
@@ -85,13 +99,13 @@ def main() -> None:
         color = FG
         if line.startswith("$ "):
             color = GREEN
-        elif line.startswith(("mcp-rollcall", "findings", "connectors", "next")):
+        elif line.startswith(("mcp-rollcall", "host", "findings", "connectors", "next")):
             color = BLUE
         elif re.search(r"\s(ERROR|FAILED|DENIED)(\s|$)", line) or line.strip().startswith("ERROR"):
             color = RED
         elif re.search(r"\s(warn|pending|shadowed)(\s|$)", line) or line.strip().startswith("warn"):
             color = YELLOW
-        elif line.strip().startswith(("note", "->", "user:", "project:")) or line.startswith("  name"):
+        elif line.strip().startswith(("note", "->")) or line.startswith("  name") or re.match(r"\s+\w+ (user|local|project|managed|plugin):", line):
             color = DIM
         elif re.search(r"\s+ok(\s|$)", line):
             color = GREEN

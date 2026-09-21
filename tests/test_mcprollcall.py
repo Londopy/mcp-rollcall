@@ -62,8 +62,11 @@ class Base(unittest.TestCase):
 
     def run_main(self, *args: str) -> tuple[int, str]:
         self.save()
-        argv = ["--project", str(self.proj), "--claude-home", str(self.home), "--claude-json", str(self.cj),
-                "--managed-dir", str(self.managed), "--no-plugins", *args]
+        # --home is a throwaway so no other host's real config is read; tests pin
+        # --agent claude unless they pass their own
+        agent = [] if "--agent" in args else ["--agent", "claude"]
+        argv = ["--project", str(self.proj), "--home", str(self.tmp / "fakehome"), "--claude-home", str(self.home),
+                "--claude-json", str(self.cj), "--managed-dir", str(self.managed), "--no-plugins", *agent, *args]
         out = io.StringIO()
         with redirect_stdout(out):
             code = mcprollcall.main(argv)

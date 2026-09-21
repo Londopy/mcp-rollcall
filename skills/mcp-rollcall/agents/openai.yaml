@@ -1,0 +1,5 @@
+# Optional Codex / ChatGPT metadata (developers.openai.com/codex/skills). Other hosts ignore it.
+interface:
+  display_name: "MCP roll call"
+  short_description: "Which MCP servers will fail to connect, exactly why, and what each costs"
+  default_prompt: "Take a roll call of my MCP servers and tell me which will fail to connect and why."

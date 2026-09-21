@@ -21,5 +21,5 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Unit tests
         run: python -W error::ResourceWarning -m unittest discover -s tests -v
-      - name: Static roll call on an empty machine
-        run: python skills/mcp-rollcall/scripts/mcprollcall.py --claude-home ./.no-home --claude-json ./.no.json --managed-dir ./.no-managed --strict
+      - name: Static roll call for every host on an empty machine
+        run: python skills/mcp-rollcall/scripts/mcprollcall.py --agent all --home ./.no-home --claude-home ./.no-home/.claude --claude-json ./.no.json --managed-dir ./.no-managed --strict

@@ -1,8 +1,8 @@
 {
   "name": "mcp-rollcall",
   "displayName": "MCP Rollcall",
-  "version": "1.0.0",
-  "description": "Take a roll call of configured MCP servers: where each is configured, which will fail to connect and exactly why (missing command, dead path, unset variable, closed port, the server's own stderr), and what each costs in tools and context.",
+  "version": "1.1.0",
+  "description": "Take a roll call of configured MCP servers in Claude Code, Codex, Cursor, Gemini CLI, Copilot, VS Code, Windsurf and OpenCode: where each is configured, which will fail to connect and exactly why (missing command, dead path, unset variable, closed port, the server's own stderr), and what each costs in tools and context.",
   "author": {
     "name": "Londopy",
     "url": "https://github.com/Londopy"
@@ -10,5 +10,18 @@
   "homepage": "https://github.com/Londopy/mcp-rollcall",
   "repository": "https://github.com/Londopy/mcp-rollcall",
   "license": "MIT",
-  "keywords": ["claude-code", "mcp", "mcp-server", "diagnostics", "connection", "stderr", "plugin"]
+  "keywords": [
+    "claude-code",
+    "codex",
+    "cursor",
+    "gemini-cli",
+    "copilot",
+    "vscode",
+    "opencode",
+    "agent-skills",
+    "mcp",
+    "mcp-servers",
+    "diagnostics",
+    "plugin"
+  ]
 }
